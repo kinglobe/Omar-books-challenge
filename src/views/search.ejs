@@ -24,6 +24,18 @@
 
 
     <div class="list-group">
+
+      <% books.forEach(book => { %>
+        <a href="/books/detail/<%= book.id %>" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+          <div class="feature-icon bg-gradient">
+            <img class="d-block mx-auto mb-4" src="<%= book.cover %>" alt="<%= book.title %>" width="172" height="257">
+          </div>
+          <div class="d-flex-column">
+            <h5><%= book.title %></h5>
+            <p><%= book.description %></p>
+          </div>
+        </a>
+      <% }); %>
       
     </div>
   </div>
