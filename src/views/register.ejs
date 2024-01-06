@@ -11,107 +11,126 @@
 </head>
 <body>
   <div class="container">
-  <%- include('partials/header.ejs') %>
-  <section class="vh-100" style="background-color: #2779e2;">
-    <div class="container h-100">
-      <div class="row d-flex justify-content-center align-items-center h-100">
-        <div class="col-xl-9">
-  
-          <h1 class="text-white mb-4">Register a new user</h1>
-  
-          <form action="/users/register" method="POST" class="card" style="border-radius: 15px;">
-            <div class="card-body">
-  
-              <div class="row align-items-center pt-4 pb-3">
-                <div class="col-md-3 ps-5">
-  
-                  <h6 class="mb-0">Full name</h6>
-  
-                </div>
-                <div class="col-md-9 pe-5">
-  
-                  <input type="text" name="name" class="form-control form-control-lg" />
-  
-                </div>
-              </div>
+    <% include('partials/header.ejs') %>
+    <section class="vh-100" style="background-color: #2779e2;">
+      <div class="container h-100">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+          <div class="col-xl-9">
+            <h1 class="text-white mb-4">Register a new user</h1>
 
-              <hr class="mx-n3">
+            <% if (errors && errors.length > 0) { %>
+              <div class="alert alert-danger" role="alert">
+                <ul>
+                  <% errors.forEach(function(error) { %>
+                    <li><%= error %></li>
+                  <% }); %>
+                </ul>
+              </div>
+            <% } %>
 
-              <div class="row align-items-center pt-4 pb-3">
-                <div class="col-md-3 ps-5">
+            <form action="/users/register" method="POST" class="card" style="border-radius: 15px;">
+              <div class="card-body">
   
-                  <h6 class="mb-0">Email</h6>
-  
+                <div class="row align-items-center pt-4 pb-3">
+                  <div class="col-md-3 ps-5">
+    
+                    <h6 class="mb-0">Full name</h6>
+    
+                  </div>
+                  <div class="col-md-9 pe-5">
+    
+                    <input type="text" name="name" class="form-control form-control-lg"  id = "name"/>
+                    <small id="msgError-name" class="ms-1 text-danger">
+                      <%= locals.errors && (errors.name && errors.name.msg) %>
+                  </small>
+                  </div>
                 </div>
-                <div class="col-md-9 pe-5">
   
-                  <input type="email" name="email" class="form-control form-control-lg" placeholder="example@gmail.com" />
+                <hr class="mx-n3">
   
+                <div class="row align-items-center pt-4 pb-3">
+                  <div class="col-md-3 ps-5">
+    
+                    <h6 class="mb-0">Email</h6>
+    
+                  </div>
+                  <div class="col-md-9 pe-5">
+    
+                    <input type="email" name="email" class="form-control form-control-lg" placeholder="example@gmail.com" id = "email" />
+                    <small id="msgError-email" class="ms-1 text-danger">
+                      <%= locals.errors && (errors.email && errors.email.msg) %>
+                  </small>
+                  </div>
                 </div>
+    
+                <hr class="mx-n3">
+    
+                <div class="row align-items-center py-3">
+                  <div class="col-md-3 ps-5">
+    
+                    <h6 class="mb-0">Country</h6>
+    
+                  </div>
+                  <div class="col-md-9 pe-5">
+    
+                    <input type="text" name="country" class="form-control form-control-lg" placeholder="Argentina" id = "country" />
+                    <small id="msgError-country" class="ms-1 text-danger">
+                      <%= locals.errors && (errors.country && errors.country.msg) %>
+                  </small>
+                  </div>
+                </div>
+    
+                <hr class="mx-n3">
+    
+                <div class="row align-items-center py-3">
+                  <div class="col-md-3 ps-5">
+    
+                    <h6 class="mb-0">Password</h6>
+    
+                  </div>
+                  <div class="col-md-9 pe-5">
+    
+                    <input type="password" name="password" class="form-control form-control-lg" id = "password">
+                    <small id="msgError-password" class="ms-1 text-danger">
+                      <%= locals.errors && (errors.password && errors.password.msg) %>
+                  </small>
+                  </div>
+                </div>
+    
+                <hr class="mx-n3">
+    
+                <div class="row align-items-center py-3">
+                  <div class="col-md-3 ps-5">
+    
+                    <h6 class="mb-0">Category</h6>
+    
+                  </div>
+                  <div class="col-md-9 pe-5">
+    
+                    <input type="radio" name="category" id="admin" value="1" />
+                    <label for="admin">Admin</label>
+                    <input type="radio" name="category" id="user" value="2" />
+                    <label for="user">User</label>
+    
+                  </div>
+                </div>
+    
+                <hr class="mx-n3">
+    
+                <div class="px-5 py-4">
+                  <button type="submit" class="btn btn-primary btn-lg">Register</button>
+                </div>
+    
               </div>
-  
-              <hr class="mx-n3">
-  
-              <div class="row align-items-center py-3">
-                <div class="col-md-3 ps-5">
-  
-                  <h6 class="mb-0">Country</h6>
-  
-                </div>
-                <div class="col-md-9 pe-5">
-  
-                  <input type="text" name="country" class="form-control form-control-lg" placeholder="Argentina" />
-  
-                </div>
-              </div>
-  
-              <hr class="mx-n3">
-  
-              <div class="row align-items-center py-3">
-                <div class="col-md-3 ps-5">
-  
-                  <h6 class="mb-0">Password</h6>
-  
-                </div>
-                <div class="col-md-9 pe-5">
-  
-                  <input type="password" name="password" class="form-control form-control-lg" >
-  
-                </div>
-              </div>
-  
-              <hr class="mx-n3">
-  
-              <div class="row align-items-center py-3">
-                <div class="col-md-3 ps-5">
-  
-                  <h6 class="mb-0">Category</h6>
-  
-                </div>
-                <div class="col-md-9 pe-5">
-  
-                  <input type="radio" name="category" id="admin" value="1" />
-                  <label for="admin">Admin</label>
-                  <input type="radio" name="category" id="user" value="2" />
-                  <label for="user">User</label>
-  
-                </div>
-              </div>
-  
-              <hr class="mx-n3">
-  
-              <div class="px-5 py-4">
-                <button type="submit" class="btn btn-primary btn-lg">Register</button>
-              </div>
-  
-            </div>
-          </form>
-  
+            </form>
+    
+          </div>
         </div>
       </div>
-    </div>
-  </section>
-</div>
-<%- include('partials/footer.ejs') %>
-</body>
+    </section>
+  </div>
+  <script src="/javascripts/validationRegister.js"></script>
+  
+  <%- include('partials/footer.ejs') %>
+  </body>
 </html>

@@ -21,7 +21,7 @@
           <div class="col-xl-9">
             <h1 class="text-white mb-4">Edit book <%= book.id %></h1>
 
-            <form action="/books/edit/<%= book.id %>" method="POST" class="card" style="border-radius: 15px;">
+            <form action="/books/edit/<%= book.id %>?_method=PUT" method="POST" class="card" style="border-radius: 15px;">
               <div class="card-body">
                 <!-- ... Otros campos ... -->
                 <div class="row align-items-center pt-4 pb-3">
@@ -35,10 +35,10 @@
                 <!-- ... Otros campos ... -->
                 <div class="row align-items-center pt-4 pb-3">
                   <div class="col-md-3 ps-5">
-                    <h6 class="mb-0">Authors</h6>
+                    <h6 class="mb-0">Cover</h6>
                   </div>
                   <div class="col-md-9 pe-5">
-                    <input type="text" name="author" class="form-control form-control-lg" value="<%= book.author %>" />
+                    <input type="text" name="cover" class="form-control form-control-lg" value="<%= book.cover %>" />
                   </div>
                 </div>
                 <!-- ... Otros campos ... -->
@@ -47,7 +47,7 @@
                     <h6 class="mb-0">Descriptión</h6>
                   </div>
                   <div class="col-md-9 pe-5">
-                    <input type="text" name="description" class="form-control form-control-lg" value="<%= book.Description %>" />
+                    <input type="text" name="description" class="form-control form-control-lg" value="<%= book.description %>" />
                   </div>
                 </div>
 

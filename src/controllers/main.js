@@ -1,19 +1,40 @@
 const bcryptjs = require('bcryptjs');
 const db = require('../database/models');
-const {Op} = require('sequelize');
+const { Op } = require('sequelize');
+
+const sessionInformation = (req) => {
+
+  if (req.cookies.userEmail) {
+    return {
+      // obtiene cookies
+      email: req.cookies.userEmail,
+      name: req.cookies.userName,
+      userIsAdmin: req.cookies.userIsAdmin
+    }
+  } else {
+    return {
+      email: null,
+      name: null,
+      userIsAdmin: null
+    }
+  }
+}
 
 const mainController = {
   home: (req, res) => {
+
+    let sessionInfo = sessionInformation(req);
+
     db.Book.findAll({
       include: [{ association: 'authors' }]
     })
       .then((books) => {
-        res.render('home', { books });
+        res.render('home', { books, sessionInformation: sessionInfo });
       })
       .catch((error) => console.log(error));
   },
   bookDetail: async (req, res) => {
-    // Implement look for details in the database
+    //Implementar la búsqueda de detalles en la base de datos.
 
     try {
       const book = await db.Book.findByPk(req.params.id, {
@@ -24,8 +45,10 @@ const mainController = {
         return res.status(404).send('Libro no encontrado');
       }
 
+      let sessionInfo = sessionInformation(req);
+
       return res.render('bookDetail', {
-        book
+        book, sessionInformation: sessionInfo
       })
 
     } catch (error) {
@@ -35,7 +58,7 @@ const mainController = {
   },
 
   bookSearch: (req, res) => {
-    res.render('search', { books: [] });
+    res.render('search', { books: [], sessionInformation: sessionInformation(req) });
   },
   bookSearchResult: async (req, res) => {
     try {
@@ -51,26 +74,45 @@ const mainController = {
         },
       });
 
-      res.render('search', { books, searchTerm });
+      res.render('search', { books, searchTerm, sessionInformation: sessionInformation(req) });
     } catch (error) {
       console.error(error);
       res.status(500).send('Error interno del servidor');
     }
   },
 
-  deleteBook: (req, res) => {
-    // Implement delete book
-    res.render('home');
+  deleteBook: async (req, res) => {
+    //Implementar eliminar libro
+    try {
+
+      const bookToDelete = await db.Book.findByPk(req.params.id, {
+          include: [{ model: db.Author, as: 'authors' }],
+      });
+
+      await bookToDelete.removeAuthors(bookToDelete.authors);
+
+      await bookToDelete.destroy();
+
+      res.render('home', { books, sessionInformation: sessionInfo });
+
+  } catch (error) {
+      console.log(error);
+      throw {
+          status: error.status || 500,
+          message: error.message || 'Ups, hubo un error :('
+      }
+  }
+   
   },
   authors: (req, res) => {
     db.Author.findAll()
       .then((authors) => {
-        res.render('authors', { authors });
+        res.render('authors', { authors, sessionInformation: sessionInformation(req) });
       })
       .catch((error) => console.log(error));
   },
-  authorBooks: async(req, res) => {
-    // Implement books by author
+  authorBooks: async (req, res) => {
+    // Implementar libros por autor
     try {
       const author = await db.Author.findByPk(req.params.id, {
         include: [{ model: db.Book, as: 'books' }],
@@ -80,72 +122,182 @@ const mainController = {
         return res.status(404).send('Autor no encontrado');
       }
 
-      res.render('authorBooks', { author });
+      res.render('authorBooks', { author, sessionInformation: sessionInformation(req) });
     } catch (error) {
       console.error(error);
       res.status(500).send('Error interno del servidor');
     }
 
-   
+
   },
   register: (req, res) => {
-    res.render('register');
+    res.render('register', { errors: [], sessionInformation: sessionInformation(req) });
   },
   processRegister: async (req, res) => {
     try {
-        // Extraer datos del formulario
-        const { name, email, country, password, category } = req.body;
+      // Extraer datos del formulario
+      const { name, email, country, password, category } = req.body;
 
-        // Hashear la contraseña
-        const hashedPassword = bcryptjs.hashSync(password, 10);
-
-        // Crear el nuevo usuario en la base de datos
-        await db.User.create({
-            Name: name,
-            Email: email,
-            Country: country,
-            Pass: hashedPassword,
-            CategoryId: category
+      // Validar que todos los campos obligatorios estén presentes
+      if (!name || !email || !country || !password || !category) {
+        return res.render('register', {
+          errors: ['Todos los campos son obligatorios'],
+          sessionInformation: sessionInformation(req)
         });
+      }
 
-        // Redirigir a la página principal o a donde sea necesario después del registro
-        res.redirect('/');
+      // Validar que el nombre tenga al menos dos letras
+      if (name.length < 2) {
+        return res.render('register', {
+          errors: ['El nombre debe tener al menos dos letras'],
+          sessionInformation: sessionInformation(req)
+        });
+      }
+
+      // Validar que el correo electrónico no esté registrado en la base de datos
+      const existingUser = await db.User.findOne({
+        where: {
+          Email: email
+        }
+      });
+
+      if (existingUser) {
+        return res.render('register', {
+          errors: ['El correo electrónico ya está registrado'],
+          sessionInformation: sessionInformation(req)
+        });
+      }
+
+
+      // Hashear la contraseña
+      const hashedPassword = bcryptjs.hashSync(password, 10);
+      // Crear el nuevo usuario en la base de datos
+      await db.User.create({
+        Name: name,
+        Email: email,
+        Country: country,
+        Pass: hashedPassword,
+        CategoryId: category
+      });
+
+      // Redirigir a la página principal 
+      res.render('login', { errors: [], sessionInformation: sessionInformation(req) });
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Error interno del servidor');
+      console.error(error);
+      res.status(500).send('Error interno del servidor');
     }
-},
-  login: (req, res) => {
-    // Implement login process
-    res.render('login');
   },
-  processLogin: (req, res) => {
+  login: (req, res) => {
+    // Implementa login 
+    res.render('login', { errors: [], sessionInformation: sessionInformation(req) });
+  },
+  processLogin: async (req, res) => {
     // Implement login process
-    res.render('home');
+
+    userEmail = req.body.email;
+    passLogin = req.body.password;
+
+    let userInDb = await db.User.findOne({
+      where: {
+        Email: userEmail
+      }
+    });
+
+    if (userInDb) {
+      let passMatch = bcryptjs.compareSync(passLogin, userInDb.Pass);
+
+      if (passMatch) {
+        delete userInDb.Pass;
+
+        // dejo los datos en cookie
+        res.cookie('userEmail', userEmail, { maxAge: (1000 * 60) * 60 });
+        res.cookie('userName', userInDb.Name, { maxAge: (1000 * 60) * 60 });
+        res.cookie('userIsAdmin', userInDb.CategoryId === 1, { maxAge: (1000 * 60) * 60 });
+
+        return res.redirect('/');
+      } else {
+
+        res.render('login', {
+          errors: ['Las credenciales son inválidas'],
+
+          sessionInformation: sessionInformation(req)
+        });
+      }
+    }
+
+    try {
+      const books = await db.Book.findAll({
+        include: [{ association: 'authors' }]
+      });
+
+      res.render('home', { books, sessionInformation: sessionInformation(req) });
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error interno del servidor');
+    }
+
+
+  },
+  processLogout: (req, res) => {
+    // Implementa logout process
+    res.clearCookie('userEmail');
+    res.clearCookie('userName');
+    res.clearCookie('userIsAdmin');
+
+    res.redirect('/');
   },
   edit: async (req, res) => {
     try {
-        const book = await db.Book.findByPk(req.params.id);
-        if (!book) {
-            return res.status(404).send('Libro no encontrado');
-        }
-        res.render('editBook', { book });
+      const book = await db.Book.findByPk(req.params.id, {
+        include: [{ association: 'authors' }]
+      });
+      if (!book) {
+        return res.status(404).send('Libro no encontrado');
+      }
+      res.render('editBook', { book, sessionInformation: sessionInformation(req) });
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Error interno del servidor');
+      console.error(error);
+      res.status(500).send('Error interno del servidor');
     }
+  },
+  processEdit: async (req, res) => {
+    try {
+
+      const { title, cover, description } = req.body
+
+      const book = await db.Book.findByPk(req.params.id, {
+          include: ['authors']
+          /* include: [{ association: 'authors' }] */
+      })
+
+      book.title = title || book.title;
+      book.cover = cover || book.cover;
+      book.description = description || book.description;
+
+      await book.save()
+
+      return res.redirect(`/books/detail/${req.params.id}`)
+
+  } catch (error) {
+      console.log(error);
+      throw {
+          status: error.status || 500,
+          message: error.message || 'Ups, hubo un error :('
+      }
+  }
+
+
 },
-processEdit: async (req, res) => {
-  try {
+  /*   try {
       const bookId = req.params.id;
 
       // Obtén el libro con sus autores asociados
       const book = await db.Book.findByPk(bookId, {
-          include: [{ association: 'authors' }]
+        include: [{ association: 'authors' }]
       });
 
       if (!book) {
-          return res.status(404).send('Libro no encontrado');
+        return res.status(404).send('Libro no encontrado');
       }
 
       // Actualiza los campos del libro
@@ -159,18 +311,18 @@ processEdit: async (req, res) => {
       // Luego, agrega los nuevos autores seleccionados
       const selectedAuthors = req.body.authors;
       if (selectedAuthors && selectedAuthors.length > 0) {
-          await book.addAuthors(selectedAuthors);
+        await book.addAuthors(selectedAuthors);
       }
 
       // Guarda los cambios en el libro
       await book.save();
 
-      res.redirect('/'); // Redirige a la página principal o a donde sea necesario
-  } catch (error) {
+      res.redirect('/', { sessionInformation: sessionInformation(req) }); // Redirige a la página principal o a donde sea necesario
+    } catch (error) {
       console.error(error);
       res.status(500).send('Error interno del servidor');
-  }
-},
+    } */
+  
 };
 
 module.exports = mainController;

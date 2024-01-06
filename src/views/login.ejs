@@ -53,6 +53,9 @@
               <hr class="mx-n3">
   
               <div class="px-5 py-4">
+                <% errors.forEach(error => { %>
+                  <p><strong><small style="color:red"><%= error %></small></strong></p>
+                <% }); %>
                 <button type="submit" class="btn btn-primary btn-lg">Login</button>
               </div>
   
