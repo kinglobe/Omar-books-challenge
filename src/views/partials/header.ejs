@@ -11,13 +11,18 @@
     </ul>
 
     <div class="col-md-3 text-end">
-      <% if(!sessionInformation.email) { %>
-      <a href="/users/login" class="btn btn-outline-primary me-2">Login</a>
+      <% if (!sessionInformation.email){ %>
+       <a href="/users/login" class="btn btn-outline-primary me-2">Login</a>
       <a href="/users/register" class="btn btn-outline-primary me-2">Sign-up</a>
+      <% }else{ %>
+        <span class="me-2">Welcome, <%= sessionInformation.name %> </span>
+        <% if(sessionInformation.userIsAdmin) { %>
+          <span class="me-2">Admin</span>
         <% } else { %>
-            <span class="me-2">Welcome, <%= sessionInformation.name %></span>
-            <a href="/users/logout" class="btn btn-outline-primary me-2">Logout</a>
+          <span class="me-2">User</span>
         <% } %>
+        <a href="/users/logout" class="btn btn-outline-primary me-2">Logout</a>
+      <%}%>
     </div>
   </header>
 </div>

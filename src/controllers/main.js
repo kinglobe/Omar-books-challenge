@@ -285,44 +285,7 @@ const mainController = {
           message: error.message || 'Ups, hubo un error :('
       }
   }
-
-
-},
-  /*   try {
-      const bookId = req.params.id;
-
-      // Obtén el libro con sus autores asociados
-      const book = await db.Book.findByPk(bookId, {
-        include: [{ association: 'authors' }]
-      });
-
-      if (!book) {
-        return res.status(404).send('Libro no encontrado');
-      }
-
-      // Actualiza los campos del libro
-      book.title = req.body.title;
-      book.description = req.body.description;
-
-      // Actualiza los autores del libro
-      // Primero, quita todos los autores asociados
-      await book.removeAuthors(book.authors);
-
-      // Luego, agrega los nuevos autores seleccionados
-      const selectedAuthors = req.body.authors;
-      if (selectedAuthors && selectedAuthors.length > 0) {
-        await book.addAuthors(selectedAuthors);
-      }
-
-      // Guarda los cambios en el libro
-      await book.save();
-
-      res.redirect('/', { sessionInformation: sessionInformation(req) }); // Redirige a la página principal o a donde sea necesario
-    } catch (error) {
-      console.error(error);
-      res.status(500).send('Error interno del servidor');
-    } */
-  
+},  
 };
 
 module.exports = mainController;
